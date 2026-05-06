@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vale Regalo Sorpresa</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: #FFF0F8;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .star { position: absolute; font-size: 18px; opacity: 0.35; pointer-events: none; }
+
+  .card {
+    max-width: 680px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 28px;
+    padding: 32px 28px 28px;
+    border: 3px solid #F9C8E6;
+    box-shadow: 0 4px 0 #F9C8E6;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header { text-align: center; margin-bottom: 24px; }
+  .header .tag {
+    display: inline-block;
+    background: #FFE0F4;
+    color: #C2387A;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 16px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .header h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: #3D1A6E;
+    line-height: 1.2;
+  }
+  .header p {
+    color: #9B6BB5;
+    font-size: 14px;
+    margin-top: 6px;
+  }
+
+  .words-row { display: none; }
+
+  .grid-wrap {
+    overflow-x: auto;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  table#sg { border-collapse: collapse; }
+  table#sg td {
+    width: 40px; height: 40px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1.5px solid #F0E6FF;
+    color: #7E57C2;
+    background: #FAF5FF;
+    border-radius: 8px;
+    user-select: none;
+    transition: background 0.12s, color 0.12s, transform 0.1s;
+  }
+  table#sg td:hover { background: #EDE7FF; transform: scale(1.08); }
+
+  td.found-0 { background: #EDE7FF !important; color: #4527A0 !important; border-color: #9575CD !important; }
+  td.found-1 { background: #D7F9F0 !important; color: #004D40 !important; border-color: #4DB6AC !important; }
+  td.found-2 { background: #FFE8F3 !important; color: #880E4F !important; border-color: #F48FB1 !important; }
+  td.found-3 { background: #FFF3CC !important; color: #7C4700 !important; border-color: #FFCA28 !important; }
+  td.selected { background: #E3F2FD !important; color: #1565C0 !important; border-color: #90CAF9 !important; }
+
+  .reveal-box {
+    background: linear-gradient(135deg, #FFF0FB 0%, #F0F4FF 100%);
+    border-radius: 20px;
+    border: 2px dashed #D4AAFF;
+    padding: 20px 16px 18px;
+    text-align: center;
+  }
+  .reveal-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #A78BCA;
+    margin-bottom: 14px;
+  }
+  .phrase-slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+  .slot-word { display: flex; gap: 3px; align-items: flex-end; }
+  .slot-letter {
+    width: 26px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 3px solid #D4AAFF;
+    font-size: 20px;
+    font-weight: 800;
+    color: #3D1A6E;
+    transition: all 0.4s;
+    border-radius: 0;
+  }
+  .slot-letter.revealed {
+    color: #7B1FA2;
+    border-bottom-color: #AB47BC;
+    animation: popIn 0.3s ease;
+  }
+  @keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    60% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  #msg {
+    font-size: 14px;
+    color: #A78BCA;
+    min-height: 22px;
+    font-weight: 500;
+  }
+
+  .win-msg { display: none; margin-top: 12px; }
+  .win-big {
+    font-size: 30px;
+    font-weight: 800;
+    color: #7B1FA2;
+    animation: bounce 0.6s ease;
+  }
+  .win-sub {
+    font-size: 15px;
+    color: #9B6BB5;
+    margin-top: 6px;
+    line-height: 1.6;
+  }
+  .confetti { font-size: 28px; margin: 4px; display: inline-block; }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    70% { transform: translateY(-5px); }
+  }
+
+  .instructions {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #F8F0FF;
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: #7E57C2;
+    line-height: 1.4;
+  }
+  .instr-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+  @media (max-width: 480px) {
+    table#sg td { width: 29px; height: 29px; font-size: 12px; border-radius: 5px; }
+    .card { padding: 20px 14px; }
+    .header h1 { font-size: 21px; }
+    .slot-letter { width: 21px; height: 32px; font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="star" style="top:4%;left:3%">✦</div>
+<div class="star" style="top:8%;left:88%">✦</div>
+<div class="star" style="top:16%;left:72%">✧</div>
+<div class="star" style="top:2%;left:45%">✦</div>
+<div class="star" style="top:22%;left:6%">✧</div>
+<div class="star" style="top:35%;left:94%">✦</div>
+<div class="star" style="top:50%;left:1%">✧</div>
+<div class="star" style="top:65%;left:96%">✦</div>
+<div class="star" style="top:78%;left:8%">✦</div>
+<div class="star" style="top:88%;left:85%">✧</div>
+<div class="star" style="top:92%;left:40%">✦</div>
+<div class="star" style="top:55%;left:91%">✧</div>
+
+<div class="card">
+  <div class="header">
+    <div class="tag">Vale regalo</div>
+    <h1>Un regalo especial<br>te espera 🎁</h1>
+    <p>Encuentra las 4 palabras escondidas para descubrir tu sorpresa</p>
+  </div>
+
+  <div class="instructions">
+    <span class="instr-icon">💡</span>
+    <span>Haz clic en la primera letra y arrastra hasta la última para seleccionar cada palabra. ¡Pueden estar en cualquier dirección!</span>
+  </div>
+
+  <div class="words-row" id="words-wrap"></div>
+
+  <div class="grid-wrap"><table id="sg"></table></div>
+
+  <div class="reveal-box">
+    <div class="reveal-label">Tu regalo secreto</div>
+    <div class="phrase-slots" id="phrase-slots"></div>
+    <div id="msg">Encuentra las palabras para revelar la frase...</div>
+    <div class="win-msg" id="win-msg">
+      <div class="win-big">¡Enhorabuena! 🎉</div>
+      <div class="win-sub">
+        <span class="confetti">🎊</span><span class="confetti">🎠</span><span class="confetti">🎊</span><br>
+        ¡Has descifrado tu regalo!<br>
+        <strong style="color:#7B1FA2">¡Prepárate para una aventura en familia!</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const WORDS = ["VALE","ESCAPE","ROOM","FAMILIA"];
+const PHRASE = "VALE POR UN ESCAPE ROOM EN FAMILIA";
+const PHRASE_WORDS = PHRASE.split(" ");
+const SIZE = 12;
+
+let grid = Array.from({length: SIZE}, () => Array(SIZE).fill(''));
+let wordCells = {};
+let selected = [];
+let foundWords = [];
+let isDragging = false;
+
+function placeWord(word, attempts) {
+  attempts = attempts || 300;
+  const dirs = [[0,1],[1,0],[0,-1],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+  for (let a=0; a<attempts; a++) {
+    const d = dirs[Math.floor(Math.random()*dirs.length)];
+    const dr = d[0], dc = d[1];
+    const r = Math.floor(Math.random()*SIZE);
+    const c = Math.floor(Math.random()*SIZE);
+    const cells = [];
+    let ok = true;
+    for (let i=0; i<word.length; i++) {
+      const nr = r+dr*i, nc = c+dc*i;
+      if (nr<0||nr>=SIZE||nc<0||nc>=SIZE) { ok=false; break; }
+      if (grid[nr][nc] && grid[nr][nc]!==word[i]) { ok=false; break; }
+      cells.push([nr,nc]);
+    }
+    if (ok) {
+      cells.forEach(function(pos,i){ grid[pos[0]][pos[1]] = word[i]; });
+      wordCells[word] = cells;
+      return true;
+    }
+  }
+  return false;
+}
+
+WORDS.forEach(function(w){ placeWord(w); });
+const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+for (let r=0; r<SIZE; r++)
+  for (let c=0; c<SIZE; c++)
+    if (!grid[r][c]) grid[r][c] = alpha[Math.floor(Math.random()*alpha.length)];
+
+function buildTable() {
+  const t = document.getElementById('sg');
+  t.innerHTML = '';
+  for (let r=0; r<SIZE; r++) {
+    const tr = document.createElement('tr');
+    for (let c=0; c<SIZE; c++) {
+      const td = document.createElement('td');
+      td.textContent = grid[r][c];
+      td.dataset.r = r; td.dataset.c = c;
+      td.addEventListener('mousedown', onStart);
+      td.addEventListener('mouseover', onMove);
+      td.addEventListener('touchstart', onTouchStart, {passive:false});
+      td.addEventListener('touchmove', onTouchMove, {passive:false});
+      tr.appendChild(td);
+    }
+    t.appendChild(tr);
+  }
+  document.addEventListener('mouseup', onEnd);
+  document.addEventListener('touchend', onEnd);
+}
+
+function buildChips() {
+  const w = document.getElementById('words-wrap');
+  WORDS.forEach(function(word,i){
+    const d = document.createElement('div');
+    d.className = 'chip chip-'+i;
+    d.id = 'chip-'+word;
+    d.textContent = word;
+    w.appendChild(d);
+  });
+}
+
+function buildPhrase() {
+  const box = document.getElementById('phrase-slots');
+  PHRASE_WORDS.forEach(function(word){
+    const sw = document.createElement('div');
+    sw.className = 'slot-word';
+    sw.id = 'slot-'+word;
+    word.split('').forEach(function(ch){
+      const sl = document.createElement('div');
+      sl.className = 'slot-letter';
+      sl.dataset.ch = ch;
+      sw.appendChild(sl);
+    });
+    box.appendChild(sw);
+  });
+}
+
+function highlightSelected() {
+  document.querySelectorAll('td').forEach(function(td){
+    const hasfound = td.className.indexOf('found-') >= 0;
+    if (!hasfound) td.classList.remove('selected');
+  });
+  selected.forEach(function(pos){
+    const r=pos[0], c=pos[1];
+    const td = document.querySelector('td[data-r="'+r+'"][data-c="'+c+'"]');
+    if (td && td.className.indexOf('found-') < 0) td.classList.add('selected');
+  });
+}
+
+function onStart(e) {
+  isDragging = true;
+  selected = [[+e.target.dataset.r, +e.target.dataset.c]];
+  highlightSelected();
+}
+
+function onMove(e) {
+  if (!isDragging) return;
+  const r = +e.target.dataset.r, c = +e.target.dataset.c;
+  if (!selected.length) return;
+  const r0 = selected[0][0], c0 = selected[0][1];
+  if (r===r0 && c===c0) return;
+  const dr = Math.sign(r-r0), dc = Math.sign(c-c0);
+  if (dr===0 && dc===0) return;
+  const dist = Math.max(Math.abs(r-r0), Math.abs(c-c0));
+  const aligned = (dr===0||dc===0||Math.abs(r-r0)===Math.abs(c-c0));
+  if (aligned) {
+    const cells = [];
+    for (let i=0; i<=dist; i++) cells.push([r0+dr*i, c0+dc*i]);
+    selected = cells;
+    highlightSelected();
+  }
+}
+
+function onTouchStart(e) {
+  e.preventDefault();
+  const t = e.touches[0];
+  const el = document.elementFromPoint(t.clientX, t.clientY);
+  if (el && el.tagName==='TD') { isDragging=true; selected=[[+el.dataset.r,+el.dataset.c]]; highlightSelected(); }
+}
+function onTouchMove(e) {
+  e.preventDefault();
+  const t = e.touches[0];
+  const el = document.elementFromPoint(t.clientX, t.clientY);
+  if (el && el.tagName==='TD') onMove({target:el});
+}
+
+function onEnd() {
+  if (!isDragging) return;
+  isDragging = false;
+  checkSelection();
+  selected = [];
+  highlightSelected();
+}
+
+function checkSelection() {
+  const str = selected.map(function(pos){ return grid[pos[0]][pos[1]]; }).join('');
+  const rev = str.split('').reverse().join('');
+  let found = null;
+  WORDS.forEach(function(w){ if ((w===str||w===rev) && foundWords.indexOf(w)<0) found=w; });
+  if (found) {
+    const ci = WORDS.indexOf(found);
+    foundWords.push(found);
+    wordCells[found].forEach(function(pos){
+      const td = document.querySelector('td[data-r="'+pos[0]+'"][data-c="'+pos[1]+'"]');
+      if (td) { td.classList.remove('selected'); td.classList.add('found-'+ci); }
+    });
+    const chip = document.getElementById('chip-'+found);
+    if (chip) { chip.classList.add('done'); }
+    revealWord(found);
+    setMsg('¡Encontraste "'+found+'"! ✨');
+    if (foundWords.length === WORDS.length) setTimeout(showWin, 400);
+  } else {
+    setMsg('');
+  }
+}
+
+function revealWord(word) {
+  PHRASE_WORDS.forEach(function(pw){
+    if (pw===word) {
+      const sw = document.getElementById('slot-'+pw);
+      if (!sw) return;
+      const letters = sw.querySelectorAll('.slot-letter');
+      letters.forEach(function(sl,i){
+        setTimeout(function(){
+          sl.textContent = sl.dataset.ch;
+          sl.classList.add('revealed');
+        }, i*90);
+      });
+    }
+  });
+}
+
+function revealSmallWords() {
+  ['POR','UN','EN'].forEach(function(w){
+    const sw = document.getElementById('slot-'+w);
+    if (!sw) return;
+    sw.querySelectorAll('.slot-letter').forEach(function(sl,i){
+      setTimeout(function(){ sl.textContent=sl.dataset.ch; sl.classList.add('revealed'); }, i*90);
+    });
+  });
+}
+
+function showWin() {
+  revealSmallWords();
+  setTimeout(function(){
+    document.getElementById('msg').style.display = 'none';
+    document.getElementById('win-msg').style.display = 'block';
+  }, 700);
+}
+
+function setMsg(t) {
+  const m = document.getElementById('msg');
+  if (m.style.display !== 'none') m.textContent = t;
+}
+
+buildTable();
+buildChips();
+buildPhrase();
+</script>
+</body>
+</html>
